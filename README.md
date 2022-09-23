@@ -4,11 +4,12 @@
 # Prerequisites
 
 ```
-torch==1.6.0 <br>
-torch-geometric==1.6.3 <br>
-torch-scatter==2.0.5 <br>
-torch-sparse==0.6.8 <br>
-in our experiment setting: cuda10.2 <br>
+python==3.8.1
+torch==1.6.0
+torch-geometric==1.6.3
+torch-scatter==2.0.5
+torch-sparse==0.6.8
+in our experiment setting: cuda10.2
 ```
 
 # How to use
