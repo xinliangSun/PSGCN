@@ -1,9 +1,11 @@
 import os
 import torch
+import time
 import networkx as nx
 import numpy as np
 import pandas as pd
 import scipy.sparse as ssp
+import multiprocessing as mp
 
 from tqdm import tqdm
 from scipy import io
@@ -113,16 +115,48 @@ def links2subgraphs(Arow, Acol, links, labels, hop):
     # extract enclosing subgraphs
     print('Enclosing subgraph extraction begins...')
     g_list = []
-    with tqdm(total=len(links[0])) as pbar:
-        num = 0
-        for i, j, g_label in zip(links[0], links[1], labels):
-            tmp = subgraph_extraction_labeling(
-                (i, j), Arow, Acol, g_label, hop
-            )
-            data = construct_pyg_graph(*tmp)
-            g_list.append(data)
-            pbar.update(1)
-            num = num + tmp[-1]
+    # with tqdm(total=len(links[0])) as pbar:
+    #     num = 0
+    #     for i, j, g_label in zip(links[0], links[1], labels):
+    #         tmp = subgraph_extraction_labeling(
+    #             (i, j), Arow, Acol, g_label, hop
+    #         )
+    #         data = construct_pyg_graph(*tmp)
+    #         g_list.append(data)
+    #         pbar.update(1)
+    #         num = num + tmp[-1]
+
+    start = time.time()
+    pool = mp.Pool(mp.cpu_count())
+    results = pool.starmap_async(
+        subgraph_extraction_labeling,
+        [
+            ((i, j), Arow, Acol, g_label)
+            for i, j, g_label in zip(links[0], links[1], labels)
+        ]
+    )
+    remaining = results._number_left
+    pbar = tqdm(total=remaining)
+    while True:
+        pbar.update(remaining - results._number_left)
+        if results.ready(): break
+        remaining = results._number_left
+        time.sleep(1)
+    results = results.get()
+    pool.close()
+    pbar.close()
+    end = time.time()
+    print("Time elapsed for subgraph extraction: {}s".format(end - start))
+    print("Transforming to pytorch_geometric graphs...")
+    g_list = []
+    pbar = tqdm(total=len(results))
+    while results:
+        tmp = results.pop()
+        g_list.append(construct_pyg_graph(*tmp[0:6]))
+        pbar.update(1)
+    pbar.close()
+    end2 = time.time()
+    print("Time elapsed for transforming to pytorch_geometric graphs: {}s".format(end2 - end))
             
     return g_list
 
@@ -298,6 +332,4 @@ def load_k_fold(data_name, seed):
 
 
 if __name__ == '__main__':
-    path = os.path.dirname(os.path.abspath(__file__))
-    path = path + "/drug_data/Gdataset.mat"
-    split_data_dict = load_k_fold(path, 1)
+    split_data_dict = load_k_fold('Gdataset', 1)

@@ -35,10 +35,12 @@ def extract_subgraph(split_data_dict, k):
     test_indices = (test_u_indices, test_v_indices)
 
     train_file_path = 'data/{}/{}/train'.format(*data_combo)
-    train_graph = MyDynamicDataset(train_file_path, adj_train, train_indices, train_labels, args.hop)
+    train_graph = MyDataset(train_file_path, adj_train, train_indices, train_labels, args.hop)
+    # train_graph = MyDynamicDataset(train_file_path, adj_train, train_indices, train_labels, args.hop)
 
     test_file_path = 'data/{}/{}/test'.format(*data_combo)
-    test_graph = MyDynamicDataset(test_file_path, adj_train, test_indices, test_labels, args.hop)
+    test_graph = MyDataset(test_file_path, adj_train, test_indices, test_labels, args.hop)
+    # test_graph = MyDynamicDataset(test_file_path, adj_train, test_indices, test_labels, args.hop)
 
     return train_graph, test_graph
 
@@ -55,7 +57,7 @@ if __name__ == '__main__':
                         help='the number of neighbor (default: 2)')
     parser.add_argument('--lr', type=float, default=1e-3, metavar='LR',
                         help='learning rate (default: 1e-3)')
-    parser.add_argument('--epochs', type=int, default=30, metavar='N',
+    parser.add_argument('--epochs', type=int, default=30, metavar='E',
                         help='number of epochs to train')
     parser.add_argument('--batch-size', type=int, default=128, metavar='N',
                         help='batch size during training')
