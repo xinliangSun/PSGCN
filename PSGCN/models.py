@@ -57,7 +57,7 @@ class PSGCN(torch.nn.Module):
 
         # delete edge_attribute
         edge_index, edge_type = dropout_adj(
-            edge_index, p=self.dropout,
+            edge_index, p=0.1,
             force_undirected=self.force_undirected, num_nodes=len(x),
             training=self.training
         )
