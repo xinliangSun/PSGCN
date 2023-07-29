@@ -11,10 +11,11 @@ from util_functions import *
 
 class PSGCN(torch.nn.Module):
     def __init__(self, dataset, gconv=GCNConv, latent_dim=[64, 64, 1], k=30,
-                 dropout=0.3, force_undirected=False):
+                 dropout_n=0.4, dropout_e=0.1,  force_undirected=False):
         super(PSGCN, self).__init__()
 
-        self.dropout = dropout
+        self.dropout_n = dropout_n
+        self.dropout_e = dropout_e
         self.force_undirected = force_undirected
         self.score1 = attention_score(latent_dim[0])
         self.score2 = attention_score(latent_dim[1])
@@ -30,7 +31,6 @@ class PSGCN(torch.nn.Module):
             k = max(10, k)  # no smaller than 10
 
         self.k = int(k)
-        self.dropout = dropout
         conv1d_channels = [16, 32]
         self.total_latent_dim = sum(latent_dim)
         conv1d_kws = [self.total_latent_dim, 5]
@@ -51,13 +51,12 @@ class PSGCN(torch.nn.Module):
         self.conv1d_params2.reset_parameters()
         self.lin1.reset_parameters()
         self.lin2.reset_parameters()
-
     def forward(self, data):
         x, edge_index, batch = data.x, data.edge_index, data.batch
 
         # delete edge_attribute
-        edge_index, edge_type = dropout_adj(
-            edge_index, p=0.1,
+        edge_index, _ = dropout_adj(
+            edge_index, p=self.dropout_e,
             force_undirected=self.force_undirected, num_nodes=len(x),
             training=self.training
         )
@@ -77,18 +76,15 @@ class PSGCN(torch.nn.Module):
         X = [x1, x2, x3]
         concat_states = torch.cat(X, 1)
 
-        x = global_sort_pool(concat_states, batch, self.k)
-        x = x.unsqueeze(1)
+        x = global_sort_pool(concat_states, batch, self.k)  # batch * (k*hidden)
+        x = x.unsqueeze(1)  # batch * 1 * (k*hidden)
         x = F.relu(self.conv1d_params1(x))
         x = self.maxpool1d(x)
         x = F.relu(self.conv1d_params2(x))
-        x = x.view(len(x), -1)
+        x = x.view(len(x), -1)  # flatten
 
         x = F.relu(self.lin1(x))
-        x = F.dropout(x, p=self.dropout, training=self.training)
+        x = F.dropout(x, p=self.dropout_n, training=self.training)
         x = self.lin2(x)
 
         return x[:, 0]
-
-
-
