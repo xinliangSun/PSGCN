@@ -36,7 +36,7 @@ else:
 
 print(args)
 
-def extract_subgraph(k):
+def extract_subgraph(split_data_dict, k):
     if args.data_name == 'Gdataset':
         print("Using Gdataset with 10% testing...")
         (
@@ -91,7 +91,7 @@ if __name__ == '__main__':
         
         for k in range(0, 10):
             print('------------ fold', str(k+1), '--------------')
-            train_graphs, test_graphs = extract_subgraph(k)
+            train_graphs, test_graphs = extract_subgraph(split_data_dict, k)
             model = PSGCN(
                 train_graphs,
                 latent_dim=[64, 64, 1],
