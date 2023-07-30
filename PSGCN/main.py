@@ -36,13 +36,13 @@ else:
 
 print(args)
 
-def extract_subgraph(split_data_dict, k):
+def extract_subgraph(split_data):
     if args.data_name == 'Gdataset':
         print("Using Gdataset with 10% testing...")
         (
             adj_train, train_labels, train_u_indices, train_v_indices,
             test_labels, test_u_indices, test_v_indices
-        ) = split_data_dict[k]
+        ) = split_data
 
     elif args.data_name == 'Cdataset':
 
@@ -50,22 +50,13 @@ def extract_subgraph(split_data_dict, k):
         (
             adj_train, train_labels, train_u_indices, train_v_indices,
             test_labels, test_u_indices, test_v_indices
-        ) = split_data_dict[k]
-
-    elif args.data_name == 'Ldataset':
-
-        print("Using Ldataset with 10% testing...")
-        (
-            adj_train, train_labels, train_u_indices, train_v_indices,
-            test_labels, test_u_indices, test_v_indices
-        ) = split_data_dict[k]
-
+        ) = split_data
     else:
         print("Using LRSSL with 10% testing...")
         (
             adj_train, train_labels, train_u_indices, train_v_indices,
             test_labels, test_u_indices, test_v_indices
-        ) = split_data_dict[k]
+        ) = split_data
 
     val_test_appendix = str(k) + '_kfold'
     data_combo = (args.data_name, val_test_appendix)
@@ -91,7 +82,7 @@ if __name__ == '__main__':
         
         for k in range(0, 10):
             print('------------ fold', str(k+1), '--------------')
-            train_graphs, test_graphs = extract_subgraph(split_data_dict, k)
+            train_graphs, test_graphs = extract_subgraph(split_data_dict[k])
             model = PSGCN(
                 train_graphs,
                 latent_dim=[64, 64, 1],
