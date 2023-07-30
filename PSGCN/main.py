@@ -50,7 +50,7 @@ def extract_subgraph(split_data_dict, k):
         (
             adj_train, train_labels, train_u_indices, train_v_indices,
             test_labels, test_u_indices, test_v_indices
-        ) = split_data_dict[k]  # load_drug_data(path)
+        ) = split_data_dict[k]
 
     elif args.data_name == 'Ldataset':
 
