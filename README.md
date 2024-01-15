@@ -1,7 +1,7 @@
 # PSGCN: Partner-specific drug repositioning approach based on graph convolutional network
 <img src="img/flow.png" alt="alt" title="title">
 
-# Prerequisites
+# Requirments
 
 ```
 python==3.8.1
